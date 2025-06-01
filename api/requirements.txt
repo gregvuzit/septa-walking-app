@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+googlemaps
+lxml
+pydantic
+httpx
+python-dotenv
+pytest
+pytest-envfiles
