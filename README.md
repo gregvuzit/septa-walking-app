@@ -16,7 +16,7 @@ This is meant for demonstration purposes only, and should by no means be assumed
 1. Clone the repository:
    ```
    git clone <repository-url>
-   cd fastapi-project
+   cd septa-walking-app
    ```
 
 2. Create an `.env` and `test.env` file in the root of the `api` directory. Insert your Google Maps API Key in both like this:
