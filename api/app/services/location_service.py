@@ -8,7 +8,6 @@ from lxml import etree, html
 
 class LocationService():
     def __init__(self):
-        # TODO: Move this to a config file
         self.gmaps = googlemaps.Client(key=os.getenv('GOOGLE_API_KEY'))
 
         # TODO: stations should come from a database
