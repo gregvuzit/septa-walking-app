@@ -46,6 +46,7 @@ async def nearest_station_with_walking_directions(location: Location):
 
     try:
         origin_param = location.address if location.location_type == "address" else (location.latitude, location.longitude)
+        # Is origin reasonably within SEPTA's coverage area? If not, return an error.
         validation_message = location_service.validate_origin_in_septa_area(origin_param)
         if validation_message:
             raise HTTPException(
@@ -53,8 +54,13 @@ async def nearest_station_with_walking_directions(location: Location):
                 detail=validation_message
             )
         
+        # Geocode origin and use that to find the geographic area that contains it.
+        # For this, it will either be NJ, DE, or a county in PA (Delaware,
+        # Montgomery, Chester, Bucks, or Philadelphia).
         origin_geocode = location_service.origin_geocode(location.location_type, origin_param)
         matching_searchable_area = location_service.origin_within(origin_geocode)
+
+        # Get the closest station in the geographic area
         closest_station = location_service.shortest_walk_in_area(
             origin_param,
             matching_searchable_area
