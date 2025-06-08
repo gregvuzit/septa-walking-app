@@ -1,0 +1,17 @@
+/* This file is intentionally left blank. */
+body {
+    background-color: #ccfbec;
+}
+
+div {
+    margin: 20px 20px 20px 0;
+}
+
+select, input {
+    height: 20px;
+    margin-left: 10px;
+}
+
+button {
+    height: 30px;
+}
