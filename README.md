@@ -18,8 +18,8 @@ Python 3 - <https://www.python.org/downloads/>
 
 For the frontend:
 
-Node - <https://nodejs.org/en>
-NPM - <https://www.npmjs.com/>
+- Node - <https://nodejs.org/en>
+- NPM - <https://www.npmjs.com/>
 
 For the datbase:
 
