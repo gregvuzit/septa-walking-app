@@ -1,29 +1,15 @@
 import googlemaps
 import os
-import xml.etree.ElementTree as ET
-import zipfile
 from functools import lru_cache
 from itertools import islice
-from lxml import etree, html
+from sqlalchemy.orm import Session
+from app.models.geographic_area import GeographicArea
 
 class LocationService():
-    def __init__(self):
+    def __init__(self, db: Session):
+        self.db = db
         self.gmaps = googlemaps.Client(key=os.getenv('GOOGLE_API_KEY'))
-
-        # TODO: stations should come from a database
-        self.stations = []
-
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        kml_file = os.path.join(base_dir, 'doc.kml')  # Assuming the KML file is named 'doc.kml'
-        if not os.path.exists(kml_file):
-            print('Extracting KML file from KMZ...')
-            kmz_file = os.path.join(base_dir, 'SEPTARegionalRailStations2016.kmz')
-            output_dir = base_dir
-            self.__extract_kmz(kmz_file, output_dir)
-
-        self.__parse_kml(kml_file)
         self.stations_by_searchable_area = self.__get_stations_by_searchable_area()
-    
 
     ######    Private Methods    ######
 
@@ -33,61 +19,33 @@ class LocationService():
         Cached version of stations by searchable area. The result will be cached after
         the first call and reused for subsequent calls.
         """
-        return self.__build_stations_by_searchable_area(self.stations)
+        return self.__build_stations_by_searchable_area()
 
-    def __build_stations_by_searchable_area(self, stations):
+    def __build_stations_by_searchable_area(self):
         """
         Break the stations down by categories based on geographic location. Only stations
         in the matching category for the input will be used for the destination list in the
         call to the distance matrix to keep costs down.
         """
-        stations_by_searchable_area = {
-            'NJ': [],
-            'DE': [],
-            'Bucks County': [],
-            'Chester County': [],
-            'Delaware County': [],
-            'Montgomery County': [],
-            'Philadelphia County': [],
-        }
+        stations_by_searchable_area = {}
 
-        for station in stations:
-            if station['State'] == 'NJ':
-                stations_by_searchable_area['NJ'].append(station)
-            elif station['State'] == 'DE':
-                stations_by_searchable_area['DE'].append(station)
-            elif station['County'] == 'Bucks':
-                stations_by_searchable_area['Bucks County'].append(station)
-            elif station['County'] == 'Chester':
-                stations_by_searchable_area['Chester County'].append(station)
-            elif station['County'] == 'Delaware':   
-                stations_by_searchable_area['Delaware County'].append(station)
-            elif station['County'] == 'Montgomery':
-                stations_by_searchable_area['Montgomery County'].append(station)
-            elif station['County'] == 'Philadelphia':
-                stations_by_searchable_area['Philadelphia County'].append(station)
+        geographic_areas = self.db.query(GeographicArea).all()
+        for geographic_area in geographic_areas:
+            stations = []
+            for station_in_ga in geographic_area.stations:
+                station = station_in_ga.station
+                stations.append({
+                    'Line': station.line,
+                    'Name': station.station_name,
+                    'Latitude': station.latitude,
+                    'Longitude': station.longitude,
+                    'Address': station.address,
+                    'City': station.city,
+                    'State': station.state,
+                    'Zip': station.zip,
+                })
 
-            # Add stations close to county borders to the adjacent county for
-            # a more thorough search
-            if station['Station_Na'] in ['Link Belt', 'Somerton', 'Torresdale']:
-                stations_by_searchable_area['Bucks County'].append(station)
-            if station['Station_Na'] == 'Wayne':
-                stations_by_searchable_area['Chester County'].append(station)
-            if station['Station_Na'] in [
-                'Strafford', 'Rosemont', 'Bryn Mawr', 'Haverford', 'Ardmore', 'Wynnewood', 'Angora',
-                'Airport Terminal A', 'Eastwick'
-            ]:
-                stations_by_searchable_area['Delaware County'].append(station)
-            if station['Station_Na'] in [
-                'Lawndale', 'Cheltenham', 'Ryers', 'Fox Chase', 'Forest Hills', 'Somerton', 'Mount Airy',
-                'Chestnut Hill East', 'Gravers', 'Wyndmoor', 'Manayunk', 'Overbrook', 'Villanova', 'Bala',
-                'Cynwyd'
-            ]:
-                stations_by_searchable_area['Montgomery County'].append(station)
-            if station['Station_Na'] in [
-                'Miquon', 'Melrose Park', 'Bethayres', 'Philmont', 'Trevose', 'Eddington'
-            ]:
-                stations_by_searchable_area['Philadelphia County'].append(station)
+            stations_by_searchable_area[geographic_area.name] = stations
 
         return stations_by_searchable_area
     
@@ -96,49 +54,6 @@ class LocationService():
         it = iter(iterable)
         while chunk := list(islice(it, size)):
             yield chunk
-
-    def __extract_kmz(self, kmz_file, output_dir):
-        '''
-        Unzip kmz and extract underlying files
-        '''
-        with zipfile.ZipFile(kmz_file, 'r') as kmz:
-            kmz.extractall(output_dir)
-
-    def __parse_kml(self, kml_file):
-        '''
-        Extract relevant station data from kml file and put it in a more easily
-        utilizable object format
-        '''
-        tree = ET.parse(kml_file)
-        root = tree.getroot()
-        # Namespace handling
-        ns = {'kml': 'http://www.opengis.net/kml/2.2'}
-        for c, placemark in enumerate(root.findall('.//kml:Placemark', ns)):
-            description = placemark.find('.//kml:description', ns).text.replace('<![CDATA[', '').replace(']]>', '')
-            
-            # Convert description text string to HTML then convert back to XML to parse it
-            html_element = html.fromstring(description)
-            xml_string = etree.tostring(html_element, encoding='unicode', method='xml', pretty_print=True)
-            description_xml = ET.fromstring(xml_string)
-            station_info = {
-                'Name': None,
-                'Latitude': None,
-                'Longitude': None,
-                'Station_Na': None,
-                'Street_Add': None,
-                'City': None,
-                'State': None,
-                'Zip': None,
-                'County': None,
-            }
-            if description_xml is not None:
-                items = list(description_xml.iter())
-                for i, subelement in enumerate(items):
-                    if subelement.text is not None and subelement.text in list(station_info.keys()):
-                        station_info[subelement.text] = items[i + 1].text
-
-            station_info['Name'] = placemark.find('kml:name', ns).text
-            self.stations.append(station_info)
 
     def __station_coordinates(self, station):
         """Return the coordinates of a station as a tuple."""
@@ -176,7 +91,7 @@ class LocationService():
             if 'administrative_area_level_1' in component['types']:
                 state = component['short_name']
             if 'administrative_area_level_2' in component['types']:
-                county = component['long_name']
+                county = component['long_name'].split()[0] # Remove 'County'
         
         # Return state if NJ or DE, otherwise return county
         if state in ['NJ', 'DE']:
@@ -193,8 +108,6 @@ class LocationService():
         closest_destination = None
         min_distance = 0
         stations = self.stations_by_searchable_area[matching_searchable_area]
-        distance_miles = 0
-        time = None
 
         # Process destinations in chunks of 25. This is the limit for the
         # distance matrix API.
@@ -208,17 +121,11 @@ class LocationService():
             for i, row in enumerate(matrix['rows'][0]['elements']):
                 if row['status'] == 'OK':  # Ensure the API returned a valid result
                     distance = row['distance']['value']  # Distance in meters
-                    # print(f"{chunk[i]['Station_Na']}: {distance} meters")
 
                     if closest_destination is None or distance < min_distance:
-                        # print(f"New shortest destination found: {chunk[i]['Station_Na']} with distance {distance} meters")
                         min_distance = distance
                         closest_destination = chunk[i]
-                        distance_miles = row['distance']['text']
-                        time = row['duration']['text']
 
-        # Print the shortest destination and its distance
-        # print(f"Closest destination: {closest_destination}, Distance: {min_distance} meters, Miles: {distance_miles}, Time: {time}")
         return closest_destination
     
     def station_to_geojson(self, station):
@@ -230,12 +137,11 @@ class LocationService():
                 "coordinates": [float(station['Longitude']), float(station['Latitude'])]
             },
             "properties": {
-                "name": station['Station_Na'],
-                "address": station['Street_Add'],
+                "name": station['Name'],
+                "address": station['Address'],
                 "city": station['City'],
                 "state": station['State'],
-                "zip": station['Zip'],
-                "county": station['County']
+                "zip": station['Zip']
             }
         }
 
@@ -250,8 +156,8 @@ class LocationService():
         # minute walk, which is a reasonable upper limit.
         suburban_station = next(
             station for station
-            in self.stations_by_searchable_area['Philadelphia County']
-            if station['Station_Na'] == 'Suburban Station'
+            in self.stations_by_searchable_area['Philadelphia']
+            if station['Name'] == 'Suburban Station'
         )
         distance_from_suburban = self.gmaps.distance_matrix(
             self.__station_coordinates(suburban_station), origin

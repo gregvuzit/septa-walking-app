@@ -21,25 +21,43 @@ This is meant for demonstration purposes only, and should by no means be assumed
    ```
 
 2. Create an `.env` and `test.env` file in the root of the `api` directory. Insert your Google Maps API Key in both like this:
-```
-GOOGLE_API_KEY=<YOUR GOOGLE KEY HERE>
-```
+   ```
+   GOOGLE_API_KEY=<YOUR GOOGLE KEY HERE>
+   ```
 
 3. Run Docker Compose
    ```
    docker-compose up --build
    ```
 
+4. Set up database
+   ```
+   docker-compose exec api alembic init alembic 
+   ```
+
+5. Seed station data
+   ```
+   docker-compose exec api bash ./scripts/run_seeds.sh
+   ```
+
+
 ## Usage
 
-The application will spin up two Docker containers:
+The application will spin up three Docker containers:
 
 1. api
 2. frontend
+3. db
 
 ### API
 
-The backend API container runs a FastAPI application with an endpoint to query Google Maps. On startup, a `doc.kml` file containing the relevant geographical data for SEPTA stations is extracted from the `SeptaRegionalRailStations2016.kmz` file. The stations are further grouped together in code by geographic area for more efficient querying (Google charges for each location queried, so the less locations queried, the better from a cost standpoint.)
+The backend API container runs a FastAPI application with an endpoint to query Google Maps. After initializing the database, running the seed file `api/scripts/seeds/001_seed_station_data.py` will extract a `doc.kml` file containing the relevant geographical data for SEPTA stations from the `SeptaRegionalRailStations2016.kmz` file.
+The seed script will seed this station data into the database, along with setting up groupings for the stations by the geographic areas they are within and, for stations near geographic borders, nearby.
+
+This grouping allows for more efficient querying (Google charges for each location queried, so the less locations queried, the better from a cost standpoint) by only searching the stations in the group of the geographic area that a request address/coordinates lie within.
+
+The station data will be loaded into application memory one time only on the first
+API request and then cached. All subsequent requests as long as the application remains up should utilize the cache for an efficient response.
 
 By default, the endpoint will be available at `http://127.0.0.1:8000/api`.
 
@@ -80,10 +98,9 @@ A suite of pytest tests is located in `api/tests/test_api_router.py`. These test
 
 To run, make sure the api container is running. Then from the root directory of the repo: `docker-compose exec api pytest`
 
-## TODOs
+## TODO
 
-1. Set up Postgres db and Alembic/SQLAlchemy setup to store station data in the db. Create a seed file to populate the stations table on first app startup.
-2. Possibly create Terraform script for deployment to AWS. Use Redis for caching station data and RDS or DyanamoDB for the table.
+Possibly create Terraform script for deployment to AWS. Use Redis for caching station data and RDS or DyanamoDB for the table.
 
 ## License
 

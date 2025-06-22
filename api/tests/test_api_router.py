@@ -32,7 +32,7 @@ def test_address_success(address, station, test_client: TestClient):
     (39.942658, -75.282525, "Lansdowne"),
     (40.096430, -75.131806, "Jenkintown-Wyncote"),
     (40.047733, -75.400476, "Strafford"),
-    (39.995051, -75.151673, "North Philadelphia"),
+    (39.995051, -75.151673, "North Broad"),
     (40.263211, -74.815808, "West Trenton"),
 ])
 def test_coordinates_success(latitude, longitude, station, test_client: TestClient):

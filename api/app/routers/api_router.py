@@ -1,9 +1,10 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
+from app.db.database import request_db
 from app.services.location_service import LocationService
 
 ApiRouter = APIRouter()
-location_service = LocationService()
 
 class Location(BaseModel):
     location_type: str
@@ -26,7 +27,10 @@ def validate_coordinate(value, name, min_val, max_val):
     return value
 
 @ApiRouter.post("")
-async def nearest_station_with_walking_directions(location: Location):
+async def nearest_station_with_walking_directions(
+    location: Location,
+    db: Session = Depends(request_db),
+):
     if location.location_type == "address" and location.address is None:
         raise HTTPException(
             status_code=400, 
@@ -45,6 +49,7 @@ async def nearest_station_with_walking_directions(location: Location):
         validate_coordinate(location.longitude, "Longitude", -180, 180)
 
     try:
+        location_service = LocationService(db)
         origin_param = location.address if location.location_type == "address" else (location.latitude, location.longitude)
         # Is origin reasonably within SEPTA's coverage area? If not, return an error.
         validation_message = location_service.validate_origin_in_septa_area(origin_param)

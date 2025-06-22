@@ -4,17 +4,11 @@ import zipfile
 from lxml import etree, html
 
 from sqlalchemy.orm import Session
-from app.db.database import SessionLocal
+from app.db.database import request_db
 from app.models.geographic_area import GeographicArea
 from app.models.station import Station
 from app.models.stations_by_geographic_area import StationsByGeographicArea
 
-def request_db():
-    try:
-        db = SessionLocal()
-        yield db
-    finally:
-        db.close()
 
 db = next(request_db())
 
