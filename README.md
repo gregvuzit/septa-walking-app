@@ -6,11 +6,24 @@ This is meant for demonstration purposes only, and should by no means be assumed
 
 ## Prerequisites
 
-1. Python 3 - <https://www.python.org/downloads/>
-2. Docker - <https://www.docker.com/>
-3. A Google Maps API Key - <https://developers.google.com/maps/documentation/javascript/get-api-key>
-4. Node - <https://nodejs.org/en>
-5. NPM - <https://www.npmjs.com/>
+1. Docker - <https://www.docker.com/>
+2. A Google Maps API Key - <https://developers.google.com/maps/documentation/javascript/get-api-key>
+
+Nothing else is necessary, as everything needed for the app to work will be setup
+and managed within the Docker containers. However, if you'd like to do local development on your own environment, you will need the following as well.
+
+For the backend:
+
+Python 3 - <https://www.python.org/downloads/>
+
+For the frontend:
+
+Node - <https://nodejs.org/en>
+NPM - <https://www.npmjs.com/>
+
+For the datbase:
+
+Postgres - <https://www.postgresql.org/>
 
 ## Setup Instructions
 
@@ -32,7 +45,7 @@ This is meant for demonstration purposes only, and should by no means be assumed
 
 4. Set up database
    ```
-   docker-compose exec api alembic init alembic 
+   docker-compose exec api alembic upgrade head 
    ```
 
 5. Seed station data
