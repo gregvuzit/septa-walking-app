@@ -26,6 +26,13 @@ target_metadata = BASE.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
+from os import getenv
+
+def get_url():
+    return getenv("DATABASE_URL")
+
+config.set_main_option('sqlalchemy.url', get_url())
+
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
@@ -58,6 +65,7 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
+
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",

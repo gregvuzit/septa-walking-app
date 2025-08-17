@@ -1,0 +1,11 @@
+# infra/terraform.tfvars.example
+# Example values for deploying septa-walking-app
+
+project_name        = "septa-walking-app"
+ecr_repository_name = "YOUR_ECR_REPO_HERE"
+db_name             = "septa_walking_app"
+db_username         = "your_db_username"
+db_password         = "your_db_password"
+api_image           = "YOUR_ECR_API_IMAGE_HERE"
+frontend_image      = "YOUR_ECR_FRONTEND_IMAGE_HERE"
+google_maps_key     = "YOUR_GOOGLE_KEY_HERE"

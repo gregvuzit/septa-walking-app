@@ -1,12 +1,11 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers.api_router import ApiRouter
 
 app = FastAPI()
 
-origins = [
-    "http://localhost:3000",
-]
+origins = os.getenv('CORS_ORIGINS', '').split(',')
 
 app.add_middleware(
     CORSMiddleware,

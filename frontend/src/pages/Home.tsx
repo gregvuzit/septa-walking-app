@@ -23,6 +23,8 @@ const Home: React.FC = () => {
         setZip(null);
         setDirections([]);
 
+        const apiUrl = `${process.env.REACT_APP_API_URL}/api`;
+
         let body: any = { location_type: locationType };
         if (locationType === 'address') {
             body.address = address;
@@ -32,7 +34,7 @@ const Home: React.FC = () => {
         }
 
         try {
-            const response = await fetch('http://127.0.0.1:8000/api', {
+            const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body),

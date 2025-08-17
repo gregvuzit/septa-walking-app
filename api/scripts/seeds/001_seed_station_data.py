@@ -160,24 +160,24 @@ def parse_kml(db, kml_file):
             create_station_by_geographic_area(db, geographic_area.id, station.id)
 
 
-print('Seeding geographic areas...')
-create_geographic_area(db, 'DE')
-create_geographic_area(db, 'NJ')
-create_geographic_area(db, 'Bucks')
-create_geographic_area(db, 'Chester')
-create_geographic_area(db, 'Delaware')
-create_geographic_area(db, 'Montgomery')
-create_geographic_area(db, 'Philadelphia')
-
 # Extract kml from kmz to get station data
 base_dir = os.path.dirname(os.path.abspath(__file__))
 kml_file = os.path.join(base_dir, 'doc.kml')  # Assuming the KML file is named 'doc.kml'
 if not os.path.exists(kml_file):
     print('Extracting KML file from KMZ...')
-    kmz_file = os.path.join(base_dir, 'SEPTARegionalRailStations2016.kmz')
+    kmz_file = os.path.join(base_dir, 'SeptaRegionalRailStations2016.kmz')
     output_dir = base_dir
     extract_kmz(kmz_file, output_dir)
 
-print('Seeding stations from KML...')
-parse_kml(db, kml_file)
+    print('Seeding geographic areas...')
+    create_geographic_area(db, 'DE')
+    create_geographic_area(db, 'NJ')
+    create_geographic_area(db, 'Bucks')
+    create_geographic_area(db, 'Chester')
+    create_geographic_area(db, 'Delaware')
+    create_geographic_area(db, 'Montgomery')
+    create_geographic_area(db, 'Philadelphia')
+
+    print('Seeding stations from KML...')
+    parse_kml(db, kml_file)
 
