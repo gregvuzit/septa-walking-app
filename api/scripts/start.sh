@@ -17,7 +17,11 @@ done
 
 APP_MODULE="app.main:app"
 APP_PORT="8000"
-UVICORN_COMMAND="uvicorn $APP_MODULE --host 0.0.0.0 --port $APP_PORT --env-file .env"
+if [ -f "/app/.env" ]; then
+    UVICORN_COMMAND="uvicorn $APP_MODULE --host 0.0.0.0 --port $APP_PORT --env-file /app/.env"
+else
+    UVICORN_COMMAND="uvicorn $APP_MODULE --host 0.0.0.0 --port $APP_PORT"
+fi
 
 echo "Starting application"
 exec $UVICORN_COMMAND

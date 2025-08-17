@@ -1,0 +1,6 @@
+**/__MACOSX/
+**/__pycache__/
+*.env
+
+scripts/seeds/doc.kml
+scripts/seeds/Layer0_Symbol_e2b2648_0.png

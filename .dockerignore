@@ -1,6 +1,8 @@
-node_modules
+node_modules/
+__MACOSX/
+__pycache__/
 npm-debug.log
-build
+build/
 .git
 .gitignore
 README.md

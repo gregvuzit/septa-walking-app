@@ -9,8 +9,7 @@ This is meant for demonstration purposes only, and should by no means be assumed
 1. Docker - <https://www.docker.com/>
 2. A Google Maps API Key - <https://developers.google.com/maps/documentation/javascript/get-api-key>
 
-Nothing else is necessary, as everything needed for the app to work will be setup
-and managed within the Docker containers. However, if you'd like to do local development on your own environment, you will need the following as well.
+Nothing else is necessary for a local deployment, as everything needed for the app to work will be setup and managed within the Docker containers. However, if you'd like to do local development on your own environment, you will need the following as well.
 
 For the backend:
 
@@ -21,7 +20,7 @@ For the frontend:
 - Node - <https://nodejs.org/en>
 - NPM - <https://www.npmjs.com/>
 
-For the datbase:
+For the database:
 
 Postgres - <https://www.postgresql.org/>
 
@@ -33,12 +32,23 @@ Postgres - <https://www.postgresql.org/>
    cd septa-walking-app
    ```
 
-2. Create an `.env` and `test.env` file in the root of the `api` directory. Insert your Google Maps API Key in both like this:
+2. Create an `.env` and `test.env` file in the root of the `api` directory. Both will include your Google Maps API Key. For .env:
+
    ```
    GOOGLE_API_KEY=<YOUR GOOGLE KEY HERE>
+   DATABASE_URL=postgresql://postgres:postgres@db/septa_walking_app
+   CORS_ORIGINS=http://localhost:3000
    ```
 
-3. Run Docker Compose
+And for test.env:
+
+   ```
+   GOOGLE_API_KEY=<YOUR GOOGLE KEY HERE>
+   DATABASE_URL=postgresql://postgres:postgres@db/septa_walking_app
+   ```
+
+
+3. Run Docker Compose (all commands from the root directory of the repository)
    ```
    docker-compose up --build
    ```
@@ -111,9 +121,9 @@ A suite of pytest tests is located in `api/tests/test_api_router.py`. These test
 
 To run, make sure the api container is running. Then from the root directory of the repo: `docker-compose exec api pytest`
 
-## TODO
+## Terraform Deployment to AWS
 
-Possibly create Terraform script for deployment to AWS. Use Redis for caching station data and RDS or DyanamoDB for the table.
+The `infra` directory contains a suite of Terraform scripts to deploy the application to AWS, utilizing ECS and RDS. See the README located there for setup instructions.
 
 ## License
 
