@@ -30,6 +30,9 @@ Again, as stated in the main README, this is meant for demonstration purposes so
 - `load_balancer_dns`: Load balancer DNS name; you should be able to go to this url in a browser and see the frontend app homepage where you can make API requests
 - `rds_endpoint`: RDS endpoint
 
+## Teardown
+Simply run `terraform destroy` from the `infra/` directory.
+
 ## Notes for a True Production Release
 - VPC and security group setup would be much more rigid
 - The frontend container Dockerfile would create and serve a production build.
