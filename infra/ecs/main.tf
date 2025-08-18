@@ -1,3 +1,4 @@
+# Cloudwatch log group for the containers
 resource "aws_cloudwatch_log_group" "ecs_log_group" {
   name              = "/ecs/septa-walking-app-logs"
   retention_in_days = 30
@@ -38,6 +39,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task_exec_attach" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
+# Set up correct IAM privileges for ECS containers to log to Cloudwatch
 resource "aws_iam_policy" "ecs_logs_policy" {
   name        = "ecs-logs-policy"
   description = "IAM policy for ECS task execution role to write logs to CloudWatch"
@@ -63,6 +65,7 @@ resource "aws_iam_role_policy_attachment" "ecs_logs_attachment" {
   policy_arn = aws_iam_policy.ecs_logs_policy.arn
 }
 
+# Set up correct IAM privileges for ECS containers to use ECS Exec
 resource "aws_iam_policy" "ecs_exec_policy" {
   name        = "ecs-exec-policy"
   description = "IAM policy for ECS Exec"
