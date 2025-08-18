@@ -47,21 +47,14 @@ And for test.env:
    DATABASE_URL=postgresql://postgres:postgres@db/septa_walking_app
    ```
 
+3. Create an `.env` file in the root of the `frontend` directory. Add the following to it:
+   ```
+   REACT_APP_API_URL=http://localhost:8000
+   ```
 
-3. Run Docker Compose (all commands from the root directory of the repository)
+4. Run Docker Compose (all commands from the root directory of the repository)
    ```
    docker-compose up --build
-   ```
-
-4. Set up database
-   ```
-   docker-compose exec api alembic upgrade head 
-   ```
-
-5. Seed station data
-   ```
-   docker-compose exec api bash ./scripts/run_seeds.sh
-   ```
 
 
 ## Usage
